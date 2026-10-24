@@ -1,0 +1,12 @@
+.build/
+build/
+.swiftpm/
+DerivedData/
+*.xcuserstate
+.DS_Store
+# Research, reference material (including Arc's copyrighted assets) and screenshots stay local
+references/
+docs/
+*.png
+*.jpg
+*.gif
