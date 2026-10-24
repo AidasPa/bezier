@@ -287,6 +287,17 @@ enum Automation {
         } else if command.hasPrefix("external:"), let url = URL(string: String(command.dropFirst("external:".count))) {
             app.openExternal(url)
             print("[automation] external opened; minis=\(app.miniWindows.count) space=\(app.activeWindow?.currentSpace.title ?? "-")")
+        } else if command == "cleantest", let browser = app.activeWindow {
+            // Removes this Space's tabs on the local test server (127.0.0.1 / localhost) only.
+            let space = browser.currentSpace
+            let local = { (tab: BrowserTab) -> Bool in ["127.0.0.1", "localhost"].contains((tab.url ?? tab.pinnedURL)?.host() ?? "") }
+            for tab in (space.today + space.allPinnedTabs).filter(local) {
+                app.contents.unload(tab)
+                if case .pinned? = app.model.location(of: tab) { app.model.togglePin(tab) }
+                app.model.discard(tab)
+            }
+            if let next = space.today.first ?? space.allPinnedTabs.first { browser.select(next) }
+            print("[automation] cleaned; today=\(space.today.count) pinned=\(space.allPinnedTabs.count)")
         } else if command == "todayinfo", let browser = app.activeWindow {
             // For test Spaces: Today's tabs by path, with group/split markers.
             let rows = browser.currentSpace.today.map { tab in
